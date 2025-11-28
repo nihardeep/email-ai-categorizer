@@ -20,7 +20,7 @@ class AIService:
         """Initialize AI service with configured providers."""
         self.openai_client = None
         self.gemini_model = None
-        self.default_provider = os.getenv('DEFAULT_AI_PROVIDER', 'openai')
+        self.default_provider = 'gemini'  # Set Gemini as default provider
         self.timeout = int(os.getenv('CATEGORIZATION_TIMEOUT', 30))
 
         # Initialize OpenAI if configured
@@ -29,12 +29,12 @@ class AIService:
             self.openai_client = openai.OpenAI(api_key=openai_key)
             logger.info("OpenAI client initialized")
 
-        # Initialize Gemini if configured
+        # Initialize Gemini 1.5 if configured
         gemini_key = os.getenv('GEMINI_API_KEY')
         if gemini_key:
             genai.configure(api_key=gemini_key)
-            self.gemini_model = genai.GenerativeModel(os.getenv('GEMINI_MODEL', 'gemini-pro'))
-            logger.info("Gemini client initialized")
+            self.gemini_model = genai.GenerativeModel(os.getenv('GEMINI_MODEL', 'gemini-1.5-pro'))
+            logger.info("Gemini 1.5 client initialized")
 
         # Define available categories
         self.categories = [
