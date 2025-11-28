@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email AI Categorizer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Email AI Categorizer</h1>
+
+    <div class="status-section">
+      <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Initializing...</span>
+      </div>
+    </div>
+
+    <div class="controls-section">
+      <button id="enableBtn" class="btn btn-primary">Enable Categorization</button>
+      <button id="disableBtn" class="btn btn-secondary">Disable</button>
+    </div>
+
+    <div class="stats-section">
+      <h3>Today's Stats</h3>
+      <div class="stat-item">
+        <span class="stat-label">Emails Processed:</span>
+        <span class="stat-value" id="emailsProcessed">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Categories Applied:</span>
+        <span class="stat-value" id="categoriesApplied">0</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <button id="settingsBtn" class="btn btn-link">Settings</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
