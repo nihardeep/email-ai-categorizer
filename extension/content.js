@@ -153,7 +153,7 @@ function isAlreadyCategorized(data) {
 // Get category from AI backend
 async function getCategoryFromAI(data) {
   try {
-    const response = await fetch('http://localhost:5000/categorize', {
+    const response = await fetch('https://email-ai-categorizer.vercel.app/categorize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

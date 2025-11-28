@@ -98,7 +98,7 @@ async function handleCategorizationRequest(emailData, sendResponse) {
   try {
     // Get backend URL from settings
     const result = await chrome.storage.local.get(['backendUrl']);
-    const backendUrl = result.backendUrl || 'http://localhost:5000';
+    const backendUrl = result.backendUrl || 'https://email-ai-categorizer.vercel.app';
 
     // Send request to backend
     const response = await fetch(`${backendUrl}/categorize`, {
