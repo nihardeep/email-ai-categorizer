@@ -7,13 +7,13 @@
   "permissions": [
     "activeTab",
     "storage",
-    "scripting",
-    "https://mail.google.com/*",
-    "https://*.googleusercontent.com/*"
+    "scripting"
   ],
 
   "host_permissions": [
-    "https://mail.google.com/*"
+    "https://mail.google.com/*",
+    "https://*.googleusercontent.com/*",
+    "https://email-ai-categorizer-git-main-nihardeeps-projects.vercel.app/*"
   ],
 
   "background": {
@@ -37,5 +37,12 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/inboxsdk.js"],
+      "matches": ["https://mail.google.com/*"]
+    }
+  ]
 }
