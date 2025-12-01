@@ -11247,7 +11247,7 @@ if (_extensionIsLoggerMaster && typeof document !== 'undefined' && typeof Mutati
       const {
         oauthToken
       } = await getEventsAccessToken();
-      const apiKey = 'AIzaSyAwlvUR2x3OnCeas8hW8NDzVMswL5hZGg8';
+      const apiKey = process.env.GOOGLE_API_KEY || 'YOUR_API_KEY_HERE';
 
       // TODO change to use CommonPageCommunicator.pageAjax()
       await (0,ajax/* default */.A)({
