@@ -4,7 +4,7 @@
 
 // --- CONFIGURATION (UPDATE THESE!) ---
 // 1. Your Vercel Backend URL
-const API_URL = "https://email-ai-categorizer-git-main-nihardeeps-projects.vercel.app/categorize/"
+const API_URL = "https://email-ai-categorizer-git-main-nihardeeps-projects.vercel.app/categorize"
 // 2. Your InboxSDK App ID (from inboxsdk.com)
 const APP_ID = 'sdk_EmailCategory_9b980e3e61'; 
 
