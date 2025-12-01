@@ -1,10 +1,35 @@
 import os
+import sys
 import json
 import logging
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from services.ai_service import AIService
-from services.gmail_parser import GmailParser
+
+print("🐍 Starting Python serverless function...")
+print(f"📂 Current working directory: {os.getcwd()}")
+print(f"📂 Python path: {sys.path}")
+
+try:
+    from flask import Flask, request, jsonify
+    print("✅ Flask imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import Flask: {e}")
+
+try:
+    from flask_cors import CORS
+    print("✅ Flask-CORS imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import Flask-CORS: {e}")
+
+try:
+    from services.ai_service import AIService
+    print("✅ AI service imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import AI service: {e}")
+
+try:
+    from services.gmail_parser import GmailParser
+    print("✅ Gmail parser imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import Gmail parser: {e}")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -15,12 +40,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize services
-ai_service = AIService()
-gmail_parser = GmailParser()
+print("🔧 Initializing AI service...")
+try:
+    ai_service = AIService()
+    print("✅ AI service initialized")
+except Exception as e:
+    print(f"❌ Failed to initialize AI service: {e}")
+    ai_service = None
+
+print("🔧 Initializing Gmail parser...")
+try:
+    gmail_parser = GmailParser()
+    print("✅ Gmail parser initialized")
+except Exception as e:
+    print(f"❌ Failed to initialize Gmail parser: {e}")
+    gmail_parser = None
 
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint."""
+    print("🏥 Health check called")
     return jsonify({
         'status': 'healthy',
         'service': 'email-ai-categorizer-backend'
@@ -39,16 +78,21 @@ def categorize_email():
         "snippet": "Email preview snippet (optional)"
     }
     """
+    print("📧 Categorize endpoint called")
     try:
+        print("📨 Getting JSON data...")
         data = request.get_json()
+        print(f"📨 Received data: {data}")
 
         if not data:
+            print("❌ No data provided")
             return jsonify({'error': 'No data provided'}), 400
 
         # Validate required fields
         required_fields = ['subject', 'sender']
         for field in required_fields:
             if field not in data:
+                print(f"❌ Missing required field: {field}")
                 return jsonify({'error': f'Missing required field: {field}'}), 400
 
         # Extract email content
@@ -57,11 +101,17 @@ def categorize_email():
         body = data.get('body', '')
         snippet = data.get('snippet', '')
 
+        print(f"📧 Processing email: {subject} from {sender}")
+
         # Parse and clean email content
+        print("🔍 Parsing email content...")
         parsed_content = gmail_parser.parse_email(subject, sender, body, snippet)
 
         # Get category from AI service
+        print("🤖 Getting category from AI service...")
         category = ai_service.categorize_email(parsed_content)
+
+        print(f"✅ Categorized email as: {category}")
 
         logger.info(f'Categorized email "{subject}" as "{category}"')
 
@@ -72,6 +122,9 @@ def categorize_email():
         })
 
     except Exception as e:
+        print(f"❌ Error in categorize_email: {str(e)}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
         logger.error(f'Error categorizing email: {str(e)}')
         return jsonify({'error': 'Internal server error'}), 500
 
@@ -105,35 +158,7 @@ def not_found(error):
 def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
-# Vercel serverless function handler
-def handler(event, context):
-    """
-    Vercel serverless function handler.
-    This function wraps the Flask app for Vercel deployment.
-    """
-    from werkzeug.test import Client
-    from werkzeug.wrappers import Response
-
-    # Create a test client
-    client = Client(app)
-
-    # Extract request details from Vercel event
-    method = event.get('method', 'GET')
-    path = event.get('path', '/')
-    headers = event.get('headers', {})
-    body = event.get('body', '')
-
-    # Convert headers to werkzeug format
-    werkzeug_headers = []
-    for key, value in headers.items():
-        werkzeug_headers.append((key, value))
-
-    # Make the request
-    response = client.open(path, method=method, headers=werkzeug_headers, data=body)
-
-    # Return response in Vercel format
-    return {
-        'statusCode': response.status_code,
-        'headers': dict(response.headers),
-        'body': response.get_data(as_text=True)
-    }
+# For Vercel deployment, just export the Flask app
+# Vercel automatically handles WSGI applications
+print("🚀 Starting Flask app for Vercel deployment...")
+print(f"📍 Available routes: {[rule.rule for rule in app.url_map.iter_rules()]}")
