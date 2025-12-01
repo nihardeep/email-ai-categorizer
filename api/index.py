@@ -66,6 +66,20 @@ except Exception as e:
     print(f"❌ Failed to initialize Gmail parser: {e}")
     gmail_parser = None
 
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint."""
+    print("🏠 Root endpoint called")
+    return jsonify({
+        'message': 'Email AI Categorizer API',
+        'status': 'running',
+        'endpoints': {
+            'health': '/health',
+            'categorize': '/categorize (POST)',
+            'categories': '/categories'
+        }
+    })
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint."""
