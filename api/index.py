@@ -26,7 +26,7 @@ except ImportError as e:
     print(f"❌ Failed to import Flask-CORS: {e}")
 
 try:
-    from services.ai_service import AIService
+    from ai_service import AIService
     print("✅ AI service imported successfully")
 except ImportError as e:
     print(f"❌ Failed to import AI service: {e}")
@@ -34,7 +34,7 @@ except ImportError as e:
     print(f"❌ Import traceback: {traceback.format_exc()}")
 
 try:
-    from services.gmail_parser import GmailParser
+    from gmail_parser import GmailParser
     print("✅ Gmail parser imported successfully")
 except ImportError as e:
     print(f"❌ Failed to import Gmail parser: {e}")
