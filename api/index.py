@@ -7,6 +7,12 @@ print("🐍 Starting Python serverless function...")
 print(f"📂 Current working directory: {os.getcwd()}")
 print(f"📂 Python path: {sys.path}")
 
+# Add the api directory to Python path so we can import services
+api_dir = os.path.dirname(os.path.abspath(__file__))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
+    print(f"📂 Added to Python path: {api_dir}")
+
 try:
     from flask import Flask, request, jsonify
     print("✅ Flask imported successfully")
@@ -24,12 +30,16 @@ try:
     print("✅ AI service imported successfully")
 except ImportError as e:
     print(f"❌ Failed to import AI service: {e}")
+    import traceback
+    print(f"❌ Import traceback: {traceback.format_exc()}")
 
 try:
     from services.gmail_parser import GmailParser
     print("✅ Gmail parser imported successfully")
 except ImportError as e:
     print(f"❌ Failed to import Gmail parser: {e}")
+    import traceback
+    print(f"❌ Import traceback: {traceback.format_exc()}")
 
 # Initialize Flask app
 app = Flask(__name__)
