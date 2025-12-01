@@ -57,24 +57,102 @@ class EmailAction(BaseModel):
 
 class AIService:
     def __init__(self):
-        # Initialize Gemini
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY missing in .env file")
-            
-        self.client = genai.Client(api_key=api_key)
+        # Defer initialization until first use
+        self.client = None
         self.model_name = "gemini-1.5-flash"
+        self._initialized = False
 
-    def categorize_email(self, subject: str, snippet: str) -> Dict[str, Any]:
+    def _ensure_initialized(self):
+        """Lazy initialization of the AI client."""
+        if self._initialized:
+            return
+
+        try:
+            # Initialize Gemini
+            api_key = os.environ.get("GEMINI_API_KEY")
+            if not api_key:
+                logger.warning("GEMINI_API_KEY not found in environment variables")
+                # Try to load from .env file as fallback
+                load_dotenv()
+                api_key = os.environ.get("GEMINI_API_KEY")
+
+            if not api_key:
+                raise ValueError("GEMINI_API_KEY missing from environment variables and .env file")
+
+            self.client = genai.Client(api_key=api_key)
+            self._initialized = True
+            logger.info("AI service initialized successfully")
+
+        except Exception as e:
+            logger.error(f"Failed to initialize AI service: {e}")
+            self.client = None
+            raise
+
+    def categorize_email(self, parsed_content: Dict[str, Any]) -> str:
         """
-        Cleans text, sends to Gemini, and returns the category + color logic.
+        Categorize email based on parsed content from GmailParser.
         """
+        # Ensure AI client is initialized
+        self._ensure_initialized()
+
+        # Extract content from parsed data
+        subject = parsed_content.get('subject', '')
+        body = parsed_content.get('body', '')
+        snippet = parsed_content.get('snippet', '')
+
+        # Use the best available content for categorization
+        content_to_analyze = snippet or body or subject
+
         # 1. Clean the text (Remove signatures, legal junk)
-        clean_snippet = clean_email_text(snippet)
+        clean_content = clean_email_text(content_to_analyze)
 
         try:
             # 2. Build the Prompt
             prompt = f"""
             {SYSTEM_PROMPT}
 
-            --- EMAIL TO
+            --- EMAIL TO ANALYZE ---
+            Subject: {subject}
+            Content: {clean_content}
+
+            Return only a JSON object with 'action' (one of: DELETE, JOB, READ, IMPORTANT), 'confidence' (0-1), and 'reasoning'.
+            """
+
+            # 3. Send to Gemini
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=genai.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=EmailAction
+                )
+            )
+
+            # 4. Parse response
+            result = response.parsed
+            if result and hasattr(result, 'action'):
+                return result.action
+
+            # Fallback if parsing fails
+            return "READ"
+
+        except Exception as e:
+            logger.error(f"Error categorizing email: {e}")
+            return "READ"  # Safe fallback
+
+    def get_available_categories(self) -> list:
+        """Get list of available email categories."""
+        return ["DELETE", "JOB", "READ", "IMPORTANT"]
+
+    def get_timestamp(self) -> str:
+        """Get current timestamp."""
+        from datetime import datetime
+        return datetime.utcnow().isoformat()
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get categorization statistics."""
+        return {
+            "total_categorized": 0,  # Placeholder
+            "categories_used": self.get_available_categories(),
+            "last_updated": self.get_timestamp()
+        }

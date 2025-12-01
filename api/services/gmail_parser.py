@@ -227,3 +227,58 @@ class GmailParser:
 
         # Clamp score between 0 and 1
         return max(0.0, min(1.0, score))
+
+
+# Standalone function for AI service (backward compatibility)
+def clean_email_text(text: str) -> str:
+    """
+    Clean email text for AI processing.
+    This is a standalone function that can be imported by ai_service.
+    """
+    if not text:
+        return ''
+
+    try:
+        # Try to parse as HTML
+        soup = BeautifulSoup(text, 'html.parser')
+
+        # Remove script and style elements
+        for script in soup(['script', 'style']):
+            script.decompose()
+
+        # Extract text
+        cleaned_text = soup.get_text()
+
+    except:
+        # If HTML parsing fails, treat as plain text
+        cleaned_text = text
+
+    # Decode HTML entities
+    cleaned_text = html.unescape(cleaned_text)
+
+    # Remove excessive whitespace
+    cleaned_text = re.sub(r'\n\s*\n', '\n\n', cleaned_text)  # Multiple newlines to double
+    cleaned_text = re.sub(r'[ \t]+', ' ', cleaned_text)  # Multiple spaces to single
+
+    # Remove common email signatures and footers
+    signature_patterns = [
+        r'--\s*$',  # Simple signature separator
+        r'Best regards,.*',
+        r'Regards,.*',
+        r'Cheers,.*',
+        r'Thank you,.*',
+        r'Sent from.*',
+        r'Confidential.*',
+        r'This email.*',
+    ]
+
+    for pattern in signature_patterns:
+        cleaned_text = re.sub(pattern, '', cleaned_text, flags=re.IGNORECASE | re.MULTILINE)
+
+    # Limit length to prevent token overflow
+    import os
+    max_length = int(os.getenv('MAX_EMAIL_LENGTH', 10000))
+    if len(cleaned_text) > max_length:
+        cleaned_text = cleaned_text[:max_length] + '...'
+
+    return cleaned_text.strip()
